@@ -44,8 +44,8 @@
       itemclick(){
         // console.log('itemclick');
         this.$router.push(this.link)
-        console.log(this.link);
-        console.log(this.$route.path);
+        // console.log(this.link);
+        // console.log(this.$route.path);
       },
     }
   }
