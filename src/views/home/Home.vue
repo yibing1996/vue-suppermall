@@ -1,8 +1,10 @@
 <template>
   <div>
     <nav-bar class="home-nav"><div slot="center">购物街</div></nav-bar>
-    <HomeSwiper :banners="banners"></HomeSwiper>
-    <HomeRecommond :recommends="recommends"></HomeRecommond>
+    <home-swiper :banners="banners"></home-swiper>
+    <home-recommond :recommends="recommends"></home-recommond>
+    <home-feature></home-feature>
+
   </div>
 </template>
 
@@ -11,6 +13,7 @@
   import NavBar from "components/common/navbar/NavBar";
   import HomeSwiper from "./childcompoents/HomeSwiper";
   import HomeRecommond from "./childcompoents/HomeRecommond";
+  import HomeFeature from "./childcompoents/HomeFeature";
 
   import {getHomeMultidata} from "network/home";
 
@@ -20,7 +23,8 @@
       //顶层导航栏
       NavBar,
       HomeSwiper,
-      HomeRecommond
+      HomeRecommond,
+      HomeFeature
     },
     data(){
       return{
