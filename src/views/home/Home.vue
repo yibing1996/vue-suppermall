@@ -4,8 +4,9 @@
     <home-swiper :banners="banners"></home-swiper>
     <home-recommond :recommends="recommends"></home-recommond>
     <home-feature></home-feature>
-    <tab-control :contents="['流行','新款','精选']" class="tab-control"></tab-control>
-
+    <tab-control :contents="['流行','新款','精选']" class="tab-control"
+     @tabitemclick="tabitemclick"></tab-control>
+    <goods-list :goods="goods[currentgood].list"></goods-list>
     <ul>
       <li>1</li>
       <li>2</li>
@@ -119,8 +120,9 @@
 
   import NavBar from "components/common/navbar/NavBar";
   import TabControl from "components/content/tabcontrol/TabControl";
+  import GoodsList from "components/content/goods/GoodsList";
 
-  import {getHomeMultidata} from "network/home";
+  import {getHomeMultidata, getHomeData} from "network/home";
 
   export default {
     name: "Home",
@@ -131,19 +133,70 @@
 
       NavBar,
       TabControl,
+      GoodsList
     },
     data(){
       return{
           banners:[],
-          recommends:[]
+          recommends:[],
+          goods:{
+            pop:{page:0, list:[]},
+            new:{page:0, list:[]},
+            sell:{page:0, list:[]},
+          },
+        currentgood:'pop'
       }
     },
   //  当组件创建出来就去请求数据
     created() {
-      getHomeMultidata().then(res =>{
-        this.banners=res.data.banner.list
-        this.recommends=res.data.recommend.list
-      })
+      this.getHomeMultidata()
+      //请求流行数据
+      this.getHomeData('pop')
+      //请求新品数据
+      this.getHomeData('new')
+      //请求精选数据
+      this.getHomeData('sell')
+
+    },
+    methods:{
+      /**
+       *事件监听相关
+       */
+      tabitemclick(index){
+        switch (index) {
+          case 0:
+            this.currentgood = 'pop'
+            break
+          case 1:
+            this.currentgood = 'new'
+            break
+          case 2:
+            this.currentgood = 'sell'
+            break
+        }
+
+      },
+
+      /**
+       * 网络请求相关
+       */
+      getHomeMultidata(){
+        getHomeMultidata().then(res =>{
+          this.banners=res.data.banner.list
+          this.recommends=res.data.recommend.list
+        })
+      },
+      getHomeData(type){
+        //在当前页上+1
+        let page = this.goods[type].page + 1
+        getHomeData(type,page).then(res =>{
+          //请求的数据保存起来
+          this.goods[type].list.push(...res.data.list)
+          //在请求一页数据后页数也相应的+1
+          this.goods[type].page+=1
+        })
+      }
+
     }
   }
 </script>
@@ -173,5 +226,6 @@
     position: -webkit-sticky;
     top:44px;
     background-color: #fff;
+    z-index: 9;
   }
 </style>

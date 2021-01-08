@@ -27,6 +27,7 @@
     methods:{
       itemclick(index){
         this.currentindex =index
+        this.$emit('tabitemclick',index)
       },
     }
   }
