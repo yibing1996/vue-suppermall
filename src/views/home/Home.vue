@@ -1,19 +1,24 @@
 <template>
   <div id="home">
     <nav-bar class="home-nav"><div slot="center">购物街</div></nav-bar>
+    <tab-control :contents="['流行','新款','精选']"
+                 class="tab-control1"
+                 @tabitemclick="tabitemclick"
+                 ref="tabcontrol1"
+                  v-show="isshowtabcontrol1"></tab-control>
     <scroll class="content"
             ref="scroll"
             :probe-type="3"
             @scroll="contentscroll"
             :pull-up-load="true"
             @pullingUp="contentloadmore">
-      <home-swiper :banners="banners"></home-swiper>
+      <home-swiper :banners="banners" @homeswiperload="homeswiperload"></home-swiper>
       <home-recommond :recommends="recommends"></home-recommond>
       <home-feature></home-feature>
       <tab-control :contents="['流行','新款','精选']"
-                   class="tab-control"
+                   class="tab-control2"
                    @tabitemclick="tabitemclick"
-                    ref="tabcontrol"></tab-control>
+                    ref="tabcontrol2"></tab-control>
       <goods-list :goods="goods[currentgood].list"></goods-list>
     </scroll>
     <back-top @click.native="backtopclick" v-show="isshowbacktop"></back-top>
@@ -59,7 +64,9 @@
           },
         currentgood:'pop',
         isshowbacktop:false,
-        taboffsettop:0
+        taboffsettop:0,
+        isshowtabcontrol1:false,
+        scrollY:0
       }
     },
   //  当组件创建出来就去请求数据
@@ -83,10 +90,7 @@
         // this.$refs && this.$refs.scroll && this.$refs.scroll.refresh()
         refresh()
       })
-
-      //2.获取tabcontrol的offsetTop
-      console.log(this.$refs.tabcontrol.$el.offsetTop);
-      this.taboffsettop = this.$refs.tabcontrol.$el.offsetTop
+      this.$refs && this.$refs.scroll && this.$refs.scroll.refresh()
 
     },
     methods:{
@@ -106,15 +110,22 @@
             this.currentgood = 'sell'
             break
         }
+        //两个tabcontrol被选中的被保持一直
+        this.$refs.tabcontrol1.currentindex = index
+        this.$refs.tabcontrol2.currentindex = index
+        // console.log(this.$refs.tabcontrol1 )
       },
       //返回顶部按钮
       backtopclick(){
         // console.log('backtopclick');
         this.$refs.scroll.scrollTo(0,0,500)
       },
-      //是否隐藏返回顶部按钮
+
       contentscroll(position){
+        //是否隐藏返回顶部按钮
           this.isshowbacktop = -position.y > 1000
+        //是否隐藏tabcontrol1
+         this.isshowtabcontrol1 = -position.y > this.taboffsettop
       },
       //到底部加载更多图片
       contentloadmore(){
@@ -122,7 +133,13 @@
         this.getHomeData(this.currentgood)
         this.$refs.scroll.finishPullUp()
       },
-      //防抖
+      //轮播图加载完毕 计算tabcontrol的offsettop的距离
+      homeswiperload(){
+        //2.获取tabcontrol的offsetTop(获取组件的offsetTop)
+        // console.log(this.$refs.tabcontrol2.$el.offsetTop);
+        this.taboffsettop = this.$refs.tabcontrol2.$el.offsetTop
+
+      },
 
       /**
        * 网络请求相关
@@ -144,6 +161,23 @@
         })
       }
 
+    },
+
+    //组件被销毁的时候使用  用了keep-alive后就不会被销毁
+    destroyed() {
+      console.log('home-destroyed');
+    },
+    //用了  keep-alive 在当前组件时是活跃状态
+    activated() {
+      // console.log('home-activated');
+      this.$refs.scroll.refresh()
+      this.$refs.scroll.scrollTo(0,this.scrollY,0)
+    },
+    //用了  keep-alive 在不是当前组件时是非活跃状态
+    deactivated() {
+      // console.log('home-deactivated');
+      this.scrollY = this.$refs.scroll.getScrollY()
+      // console.log(this.scrollY)
     }
   }
 </script>
@@ -162,19 +196,28 @@
   background-color: var(--color-tint);
   color: #fff;
   font-weight: 700;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 9;
+  /*position: fixed;*/
+  /*top: 0;*/
+  /*left: 0;*/
+  /*right: 0;*/
+  /*z-index: 9;*/
 }
 
-  .tab-control {
-    position: sticky;
-    position: -webkit-sticky;
-    top:44px;
+  .tab-control2 {
+    /*position: sticky;*/
+    /*position: -webkit-sticky;*/
+    /*top:44px;*/
     background-color: #fff;
+    /*z-index: 9;*/
+  }
+
+  .tab-control1 {
+    position: fixed;
+    left:0;
+    right: 0;
+    top:43px;
     z-index: 9;
+    background-color: #fff;
   }
 
   .content {

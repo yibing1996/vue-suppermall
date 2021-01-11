@@ -3,7 +3,7 @@
     <Swiper>
       <SwiperItem v-for="item in banners">
         <a :href="item.link">
-          <img :src="item.image923" alt="">
+          <img :src="item.image923" alt="" @load="homeswiperload">
         </a>
       </SwiperItem>
     </Swiper>
@@ -18,12 +18,28 @@
       Swiper,
       SwiperItem
     },
+    data(){
+      return {
+        isload:false
+      }
+    },
     props:{
       banners:{
         type:Array,
         default(){
           return []
         }
+      }
+    },
+    methods:{
+      //图片加载完毕
+      homeswiperload() {
+        if(!this.isload){
+          // console.log('图片加载完毕');
+          this.isload = true
+          this.$emit('homeswiperload')
+        }
+
       }
     }
   }

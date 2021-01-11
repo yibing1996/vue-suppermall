@@ -54,6 +54,7 @@
       // console.log(this.scroll);
     },
     methods:{
+      //滚动到哪里
       scrollTo(x,y,time=300){
         this.scroll && this.scroll.scrollTo(x,y,time)
       },
@@ -65,6 +66,9 @@
       refresh(){
         // console.log('---');
         this.scroll && this.scroll.refresh()
+      },
+      getScrollY(){
+        return this.scroll ? this.scroll.y : 0
       }
     }
   }
