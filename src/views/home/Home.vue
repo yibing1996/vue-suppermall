@@ -1,114 +1,22 @@
 <template>
-  <div class="home">
+  <div id="home">
     <nav-bar class="home-nav"><div slot="center">购物街</div></nav-bar>
-    <home-swiper :banners="banners"></home-swiper>
-    <home-recommond :recommends="recommends"></home-recommond>
-    <home-feature></home-feature>
-    <tab-control :contents="['流行','新款','精选']" class="tab-control"
-     @tabitemclick="tabitemclick"></tab-control>
-    <goods-list :goods="goods[currentgood].list"></goods-list>
-    <ul>
-      <li>1</li>
-      <li>2</li>
-      <li>3</li>
-      <li>4</li>
-      <li>5</li>
-      <li>6</li>
-      <li>7</li>
-      <li>8</li>
-      <li>9</li>
-      <li>10</li>
-      <li>11</li>
-      <li>12</li>
-      <li>13</li>
-      <li>14</li>
-      <li>15</li>
-      <li>16</li>
-      <li>17</li>
-      <li>18</li>
-      <li>19</li>
-      <li>20</li>
-      <li>21</li>
-      <li>22</li>
-      <li>23</li>
-      <li>24</li>
-      <li>25</li>
-      <li>26</li>
-      <li>27</li>
-      <li>28</li>
-      <li>29</li>
-      <li>30</li>
-      <li>31</li>
-      <li>32</li>
-      <li>33</li>
-      <li>34</li>
-      <li>35</li>
-      <li>36</li>
-      <li>37</li>
-      <li>38</li>
-      <li>39</li>
-      <li>40</li>
-      <li>41</li>
-      <li>42</li>
-      <li>43</li>
-      <li>44</li>
-      <li>45</li>
-      <li>46</li>
-      <li>47</li>
-      <li>48</li>
-      <li>49</li>
-      <li>50</li>
-      <li>51</li>
-      <li>52</li>
-      <li>53</li>
-      <li>54</li>
-      <li>55</li>
-      <li>56</li>
-      <li>57</li>
-      <li>58</li>
-      <li>59</li>
-      <li>60</li>
-      <li>61</li>
-      <li>62</li>
-      <li>63</li>
-      <li>64</li>
-      <li>65</li>
-      <li>66</li>
-      <li>67</li>
-      <li>68</li>
-      <li>69</li>
-      <li>70</li>
-      <li>71</li>
-      <li>72</li>
-      <li>73</li>
-      <li>74</li>
-      <li>75</li>
-      <li>76</li>
-      <li>77</li>
-      <li>78</li>
-      <li>79</li>
-      <li>80</li>
-      <li>81</li>
-      <li>82</li>
-      <li>83</li>
-      <li>84</li>
-      <li>85</li>
-      <li>86</li>
-      <li>87</li>
-      <li>88</li>
-      <li>89</li>
-      <li>90</li>
-      <li>91</li>
-      <li>92</li>
-      <li>93</li>
-      <li>94</li>
-      <li>95</li>
-      <li>96</li>
-      <li>97</li>
-      <li>98</li>
-      <li>99</li>
-      <li>100</li>
-    </ul>
+    <scroll class="content"
+            ref="scroll"
+            :probe-type="3"
+            @scroll="contentscroll"
+            :pull-up-load="true"
+            @pullingUp="contentloadmore">
+      <home-swiper :banners="banners"></home-swiper>
+      <home-recommond :recommends="recommends"></home-recommond>
+      <home-feature></home-feature>
+      <tab-control :contents="['流行','新款','精选']"
+                   class="tab-control"
+                   @tabitemclick="tabitemclick"
+                    ref="tabcontrol"></tab-control>
+      <goods-list :goods="goods[currentgood].list"></goods-list>
+    </scroll>
+    <back-top @click.native="backtopclick" v-show="isshowbacktop"></back-top>
   </div>
 </template>
 
@@ -121,8 +29,11 @@
   import NavBar from "components/common/navbar/NavBar";
   import TabControl from "components/content/tabcontrol/TabControl";
   import GoodsList from "components/content/goods/GoodsList";
+  import scroll from "components/common/bscroll/Bscroll"
+  import BackTop from 'components/content/backtop/BackTop'
 
   import {getHomeMultidata, getHomeData} from "network/home";
+  import {debounce} from "common/utils";
 
   export default {
     name: "Home",
@@ -133,7 +44,9 @@
 
       NavBar,
       TabControl,
-      GoodsList
+      GoodsList,
+      scroll,
+      BackTop
     },
     data(){
       return{
@@ -144,7 +57,9 @@
             new:{page:0, list:[]},
             sell:{page:0, list:[]},
           },
-        currentgood:'pop'
+        currentgood:'pop',
+        isshowbacktop:false,
+        taboffsettop:0
       }
     },
   //  当组件创建出来就去请求数据
@@ -158,10 +73,27 @@
       this.getHomeData('sell')
 
     },
+    //组件加载完成后执行
+    mounted() {
+      //1. 防抖动处理    每加载一次图片重新计算高度
+      const refresh = debounce(this.$refs.scroll.refresh,100)
+      //监听事件总线事件
+      this.$bus.$on('imageitemload', ()=>{
+        // console.log('imageitemonload');
+        // this.$refs && this.$refs.scroll && this.$refs.scroll.refresh()
+        refresh()
+      })
+
+      //2.获取tabcontrol的offsetTop
+      console.log(this.$refs.tabcontrol.$el.offsetTop);
+      this.taboffsettop = this.$refs.tabcontrol.$el.offsetTop
+
+    },
     methods:{
       /**
        *事件监听相关
        */
+      //记录当前点击了那个品牌的按钮
       tabitemclick(index){
         switch (index) {
           case 0:
@@ -174,8 +106,23 @@
             this.currentgood = 'sell'
             break
         }
-
       },
+      //返回顶部按钮
+      backtopclick(){
+        // console.log('backtopclick');
+        this.$refs.scroll.scrollTo(0,0,500)
+      },
+      //是否隐藏返回顶部按钮
+      contentscroll(position){
+          this.isshowbacktop = -position.y > 1000
+      },
+      //到底部加载更多图片
+      contentloadmore(){
+        // console.log('加载到底部');
+        this.getHomeData(this.currentgood)
+        this.$refs.scroll.finishPullUp()
+      },
+      //防抖
 
       /**
        * 网络请求相关
@@ -204,9 +151,11 @@
 
 
 <style scoped>
-  .home {
-    padding-top: 44px;
-    /*padding-bottom: 1000px;*/
+  #home {
+    height: 100vh;
+    position: relative;
+    /*padding-top: 44px;*/
+
   }
 
 .home-nav {
@@ -217,8 +166,7 @@
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  z-index: 90;
+  z-index: 9;
 }
 
   .tab-control {
@@ -227,5 +175,14 @@
     top:44px;
     background-color: #fff;
     z-index: 9;
+  }
+
+  .content {
+    overflow: hidden;
+    position: absolute;
+    top:44px;
+    bottom:49px;
+    left: 0;
+    right: 0;
   }
 </style>
