@@ -5,6 +5,7 @@ const Home = ()=> import('views/home/Home')
 const Cart = ()=>import('views/cart/Cart')
 const CateGory = ()=> import('views/category/CateGory')
 const Profile = ()=>import('views/profile/Profile')
+const Detail = ()=>import('views/detail/Detail')
 
 //使用路由
 Vue.use(VueRouter)
@@ -31,6 +32,10 @@ const routes = [
     path:'/profile',
     component:Profile
   },
+  {
+    path:'/detail/:goodid',
+    component:Detail
+  }
 ]
 
 const router = new VueRouter({

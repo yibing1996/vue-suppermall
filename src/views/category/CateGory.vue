@@ -122,11 +122,11 @@
 
       //获取位置
       bscroll.on('scroll',position =>{
-        console.log(position);
+        // console.log(position);
       })
 
       bscroll.on('pullingUp', ()=>{
-        console.log('上拉加载更多');
+        // console.log('上拉加载更多');
         bscroll.finishPullUp()
       })
     }
