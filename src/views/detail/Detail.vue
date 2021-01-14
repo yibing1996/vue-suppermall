@@ -1,13 +1,16 @@
 <template>
   <div id="detail">
-    <detail-nav-bar></detail-nav-bar>
-    <detail-swiper :banners="banners"></detail-swiper>
-    <detail-base-info :goods="goodsinfo"></detail-base-info>
-    <detail-shop-info :shop="shopinfo"></detail-shop-info>
+    <detail-nav-bar class="detail-bar"></detail-nav-bar>
+    <scroll class="content" ref="scroll">
+      <detail-swiper :banners="banners"></detail-swiper>
+      <detail-base-info :goods="goodsinfo"></detail-base-info>
+      <detail-shop-info :shop="shopinfo"></detail-shop-info>
+    </scroll>
   </div>
 </template>
 
 <script>
+  import Scroll from 'components/common/bscroll/Bscroll'
   import DetailNavBar from './childcomponents/DetailNavBar';
   import DetailSwiper from './childcomponents/DetailSwiper'
   import DetailBaseInfo from './childcomponents/DetailBaseInfo'
@@ -26,6 +29,7 @@
       }
     },
     components:{
+      Scroll,
       DetailNavBar,
       DetailSwiper,
       DetailBaseInfo,
@@ -44,7 +48,11 @@
         this.goodsinfo = new GoodsInfo(data.itemInfo,data.columns,data.shopInfo.services)
         //获取商家信息
         this.shopinfo = new ShopInfo(data.shopInfo)
-
+      })
+    },
+    mounted() {
+      this.$bus.$on('detailswiperload',()=>{
+        this.$refs.scroll && this.$refs.scroll.refresh()
       })
     }
   }
@@ -55,5 +63,14 @@
   position: relative;
   z-index: 9;
   background-color: #fff;
+  height: 100vh;
 }
+  .detail-bar {
+    position: relative;
+    z-index: 9;
+    background-color: #fff;
+  }
+  .content {
+    height: calc(100% - 44px);
+  }
 </style>

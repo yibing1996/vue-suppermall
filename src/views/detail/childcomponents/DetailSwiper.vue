@@ -1,7 +1,7 @@
 <template>
     <Swiper class="detail-swiper">
       <SwiperItem v-for="item in banners" class="banneritem">
-        <img :src="item" alt="">
+        <img :src="item" alt="" @load="detailswiperload">
       </SwiperItem>
     </Swiper>
 </template>
@@ -19,9 +19,23 @@
         }
       }
     },
+    data(){
+      return{
+        isimgload:false
+      }
+    },
     components:{
       Swiper,
       SwiperItem
+    },
+    methods:{
+      detailswiperload(){
+        if(!this.isimgload){
+          this.$bus.$emit('detailswiperload')
+          this.isimgload = true
+        }
+
+      }
     }
   }
 </script>
