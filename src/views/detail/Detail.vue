@@ -7,20 +7,25 @@
       <detail-shop-info :shop="shopinfo"></detail-shop-info>
       <detail-goods-info :detailInfo="detailinfo" @detailimageload="detailimageload"></detail-goods-info>
       <detail-params-info :paraminfo="goodsparams"></detail-params-info>
+      <detail-comment-info :comment="comment"></detail-comment-info>
+      <detail-recommond-info :recommond="recommond"></detail-recommond-info>
     </scroll>
   </div>
 </template>
 
 <script>
   import Scroll from 'components/common/bscroll/Bscroll'
+
   import DetailNavBar from './childcomponents/DetailNavBar';
   import DetailSwiper from './childcomponents/DetailSwiper'
   import DetailBaseInfo from './childcomponents/DetailBaseInfo'
   import DetailShopInfo from './childcomponents/DetailShopInfo'
   import DetailGoodsInfo from './childcomponents/DetailGoodsInfo'
   import DetailParamsInfo from "./childcomponents/DetailParamsInfo";
+  import DetailCommentInfo from "./childcomponents/DetailCommentInfo"
+  import DetailRecommondInfo from "./childcomponents/DetailRecommondInfo";
 
-  import {getdetaildata,GoodsInfo,ShopInfo,GoodsParam} from "network/detail";
+  import {getdetaildata,GoodsInfo,ShopInfo,GoodsParam,getRecommend} from "network/detail";
 
   export default {
     name: "Detail",
@@ -31,7 +36,9 @@
         goodsinfo:{},
         shopinfo:{},
         detailinfo:{},
-        goodsparams:{}
+        goodsparams:{},
+        comment:{},
+        recommond:[]
       }
     },
     components:{
@@ -41,7 +48,9 @@
       DetailBaseInfo,
       DetailShopInfo,
       DetailGoodsInfo,
-      DetailParamsInfo
+      DetailParamsInfo,
+      DetailCommentInfo,
+      DetailRecommondInfo
     },
     created() {
       //获取本次商品的id
@@ -49,7 +58,7 @@
       //每次组件创建的时候获取相应商品的详情信息
       getdetaildata(this.goodid).then(res=>{
         const data = res.result
-        console.log(data);
+        // console.log(data);
         //获取轮播图数据
         this.banners = data.itemInfo.topImages
         //获取商品信息
@@ -60,7 +69,20 @@
         this.detailinfo = data.detailInfo
         //获取商品的参数信息
         this.goodsparams = new GoodsParam(data.itemParams.info,data.itemParams.rule)
+        //获取商品的品论信息
+        if(data.rate)
+        {
+          this.comment = data.rate.list[0]
+        }
+
+
       })
+      //获取更多推荐
+      getRecommend().then(res=>{
+        this.recommond = res.data.list
+        console.log(this.recommond)
+      })
+
     },
     methods:{
       detailimageload(){

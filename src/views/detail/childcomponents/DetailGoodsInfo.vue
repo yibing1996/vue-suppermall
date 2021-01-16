@@ -32,9 +32,9 @@
     methods:{
       detailimageload(){
         //只有当所有的图片都加载完成的时候才抛出图片加载完这个事件
-        if(++this.counter===this.imagesLengh){
+        // if(++this.counter===this.imagesLengh){
           this.$emit('detailimageload')
-        }
+        // }
 
       }
     },
