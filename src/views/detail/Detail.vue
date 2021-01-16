@@ -6,6 +6,7 @@
       <detail-base-info :goods="goodsinfo"></detail-base-info>
       <detail-shop-info :shop="shopinfo"></detail-shop-info>
       <detail-goods-info :detailInfo="detailinfo" @detailimageload="detailimageload"></detail-goods-info>
+      <detail-params-info :paraminfo="goodsparams"></detail-params-info>
     </scroll>
   </div>
 </template>
@@ -17,8 +18,9 @@
   import DetailBaseInfo from './childcomponents/DetailBaseInfo'
   import DetailShopInfo from './childcomponents/DetailShopInfo'
   import DetailGoodsInfo from './childcomponents/DetailGoodsInfo'
+  import DetailParamsInfo from "./childcomponents/DetailParamsInfo";
 
-  import {getdetaildata,GoodsInfo,ShopInfo} from "network/detail";
+  import {getdetaildata,GoodsInfo,ShopInfo,GoodsParam} from "network/detail";
 
   export default {
     name: "Detail",
@@ -28,7 +30,8 @@
         banners:[],
         goodsinfo:{},
         shopinfo:{},
-        detailinfo:{}
+        detailinfo:{},
+        goodsparams:{}
       }
     },
     components:{
@@ -37,7 +40,8 @@
       DetailSwiper,
       DetailBaseInfo,
       DetailShopInfo,
-      DetailGoodsInfo
+      DetailGoodsInfo,
+      DetailParamsInfo
     },
     created() {
       //获取本次商品的id
@@ -54,6 +58,8 @@
         this.shopinfo = new ShopInfo(data.shopInfo)
         //获取商品详情的一些信息和图片
         this.detailinfo = data.detailInfo
+        //获取商品的参数信息
+        this.goodsparams = new GoodsParam(data.itemParams.info,data.itemParams.rule)
       })
     },
     methods:{
