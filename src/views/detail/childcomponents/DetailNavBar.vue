@@ -35,6 +35,7 @@
       //点击切换颜色
       centeritemclick(index){
         this.currentindex = index
+        this.$emit('centeritemclick',index)
       }
     }
   }
