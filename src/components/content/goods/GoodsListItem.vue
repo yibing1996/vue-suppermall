@@ -31,6 +31,14 @@
         // console.log('imgonload');
         //发送事件总线事件
         this.$bus.$emit('imageitemload')
+
+        //因为首页和详情页都用到了这里的事件所以可以用路由的方式进行区分 监听不同的事件
+        //我们为了学习混入mixin的知识这里还是用上面的方式
+        // if(this.$route.path.indexOf('home')){
+        //   this.$bus.$emit('homeimageitemload')
+        // }else if(this.$route.path.indexOf('detail')){
+        //   this.$bus.$emit('detaikimageitemload')
+        // }
       },
       //点击跳转到详情页
       itemclick(){

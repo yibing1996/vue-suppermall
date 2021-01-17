@@ -26,6 +26,8 @@
   import DetailRecommondInfo from "./childcomponents/DetailRecommondInfo";
 
   import {getdetaildata,GoodsInfo,ShopInfo,GoodsParam,getRecommend} from "network/detail";
+  import {debounce} from "common/utils";
+  import {itemListenImage} from "common/mixin"
 
   export default {
     name: "Detail",
@@ -38,7 +40,8 @@
         detailinfo:{},
         goodsparams:{},
         comment:{},
-        recommond:[]
+        recommond:[],
+        // itemlisten:null
       }
     },
     components:{
@@ -80,7 +83,7 @@
       //获取更多推荐
       getRecommend().then(res=>{
         this.recommond = res.data.list
-        console.log(this.recommond)
+        // console.log(this.recommond)
       })
 
     },
@@ -88,13 +91,29 @@
       detailimageload(){
         // console.log('---');
         this.$refs.scroll && this.$refs.scroll.refresh()
-      }
+      },
     },
+    //混入: 会把混入里面 data  或者各种生命周期里的内容加到本次组件里
+    mixins:[itemListenImage],
     mounted() {
       //轮播图加载完成之后重新计算可滚动高度
-      this.$bus.$on('detailswiperload',()=>{
-        this.$refs.scroll && this.$refs.scroll.refresh()
-      })
+      // this.$bus.$on('detailswiperload',()=>{
+      //   this.$refs.scroll && this.$refs.scroll.refresh()
+      // })
+
+      // //1. 防抖动处理    每加载一次图片重新计算高度
+      // const refresh = debounce(this.$refs.scroll.refresh,100)
+      // this.itemlisten = ()=> {
+      //   refresh()
+      // }
+      // //监听事件总线事件
+      // this.$bus.$on('imageitemload', this.itemlisten)
+      // this.$refs && this.$refs.scroll && this.$refs.scroll.refresh()
+    },
+    destroyed() {
+      // console.log('detaildestroyed');
+      //组件销毁的时候就不监听这个事件了
+      this.$bus.$off('imageitemload',this.itemlisten)
     }
   }
 </script>

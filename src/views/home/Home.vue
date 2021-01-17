@@ -39,6 +39,7 @@
 
   import {getHomeMultidata, getHomeData} from "network/home";
   import {debounce} from "common/utils";
+  import {itemListenImage} from 'common/mixin'
 
   export default {
     name: "Home",
@@ -66,7 +67,8 @@
         isshowbacktop:false,
         taboffsettop:0,
         isshowtabcontrol1:false,
-        scrollY:0
+        scrollY:0,
+        // itemlisten:null
       }
     },
   //  当组件创建出来就去请求数据
@@ -80,17 +82,19 @@
       this.getHomeData('sell')
 
     },
+    //混入: 会把混入里面 data  或者各种生命周期里的内容加到本次组件里
+    mixins:[itemListenImage],
     //组件加载完成后执行
     mounted() {
-      //1. 防抖动处理    每加载一次图片重新计算高度
-      const refresh = debounce(this.$refs.scroll.refresh,100)
-      //监听事件总线事件
-      this.$bus.$on('imageitemload', ()=>{
-        // console.log('imageitemonload');
-        // this.$refs && this.$refs.scroll && this.$refs.scroll.refresh()
-        refresh()
-      })
-      this.$refs && this.$refs.scroll && this.$refs.scroll.refresh()
+      // //1. 防抖动处理    每加载一次图片重新计算高度
+      // const refresh = debounce(this.$refs.scroll.refresh,100)
+      // this.itemlisten = ()=> {
+      //   refresh()
+      // }
+      // //监听事件总线事件
+      // //监听事件总线事件
+      // this.$bus.$on('imageitemload', this.itemlisten)
+      // this.$refs && this.$refs.scroll && this.$refs.scroll.refresh()
 
     },
     methods:{
@@ -177,6 +181,8 @@
     deactivated() {
       // console.log('home-deactivated');
       this.scrollY = this.$refs.scroll.getScrollY()
+      //组件不活跃的时候就不监听这个事件了
+      this.$bus.$off('imageitemload',this.itemlisten)
       // console.log(this.scrollY)
     }
   }
