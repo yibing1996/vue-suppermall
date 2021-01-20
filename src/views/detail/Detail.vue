@@ -1,7 +1,12 @@
 <template>
   <div id="detail">
-    <detail-nav-bar class="detail-bar" @centeritemclick="centeritemclick"></detail-nav-bar>
-    <scroll class="content" ref="scroll">
+    <detail-nav-bar class="detail-bar"
+                    @centeritemclick="centeritemclick"
+                    ref="detailbar"></detail-nav-bar>
+    <scroll class="content"
+            ref="scroll"
+            :probe-type="3"
+            @scroll="scroll">
       <detail-swiper :banners="banners"></detail-swiper>
       <detail-base-info :goods="goodsinfo"></detail-base-info>
       <detail-shop-info :shop="shopinfo"></detail-shop-info>
@@ -10,6 +15,8 @@
       <detail-comment-info :comment="comment" ref="comment"></detail-comment-info>
       <detail-recommond-info :recommond="recommond" ref="recommend"></detail-recommond-info>
     </scroll>
+    <detail-bottom-bar class="bottom-bar" @addcart="addcart"></detail-bottom-bar>
+    <back-top @click.native="backtopclick" v-show="isshowbacktop"></back-top>
   </div>
 </template>
 
@@ -24,6 +31,8 @@
   import DetailParamsInfo from "./childcomponents/DetailParamsInfo";
   import DetailCommentInfo from "./childcomponents/DetailCommentInfo"
   import DetailRecommondInfo from "./childcomponents/DetailRecommondInfo";
+  import DetailBottomBar from "./childcomponents/DetailBottomBar"
+  import BackTop from 'components/content/backtop/BackTop'
 
   import {getdetaildata,GoodsInfo,ShopInfo,GoodsParam,getRecommend} from "network/detail";
   import {debounce} from "common/utils";
@@ -43,11 +52,13 @@
         recommond:[],
         // itemlisten:null   用了混入  所以注释掉
         themeTopy:[],
-        themescroll:null
+        themescroll:null,
+        isshowbacktop:false,
       }
     },
     components:{
       Scroll,
+
       DetailNavBar,
       DetailSwiper,
       DetailBaseInfo,
@@ -55,7 +66,9 @@
       DetailGoodsInfo,
       DetailParamsInfo,
       DetailCommentInfo,
-      DetailRecommondInfo
+      DetailRecommondInfo,
+      DetailBottomBar,
+      BackTop
     },
     created() {
       //获取本次商品的id
@@ -111,16 +124,19 @@
         this.themeTopy.push(this.$refs.params.$el.offsetTop)
         this.themeTopy.push(this.$refs.comment.$el.offsetTop)
         this.themeTopy.push(this.$refs.recommend.$el.offsetTop)
+        this.themeTopy.push(Number.MAX_VALUE)
         // console.log(this.themeTopy);
       },100)
 
     },
     methods:{
+      //商品的图片加载后重新计算scroll的高度
       detailimageload(){
         // console.log('---');
         // this.$refs.scroll && this.$refs.scroll.refresh()
         //混入里的内容  加了防抖还
         this.refresh()
+        //保存 商品 参数 评论 推荐 对应的offsetTop
         this.themescroll()
         //在created里用防抖封装一下
         // this.themeTopy = []
@@ -130,6 +146,7 @@
         // this.themeTopy.push(this.$refs.recommend.$el.offsetTop)
         // console.log(this.themeTopy);
       },
+      //点击按钮可以回到对应的位置上 商品 参数 评论 推荐
       centeritemclick(index){
         // console.log(index);
         if(this.themeTopy[index] !==0){
@@ -140,7 +157,48 @@
         }
 
       },
+      //监听滚动  并滚动到一定位置 切换 商品 参数 评论 推荐
+      scroll(position){
+        // console.log(position);
+        let scrollY = -position.y
+          // [0, 13874, 15156, 15405, 1.7976931348623157e+308,]
+        for(let i=0;i<this.themeTopy.length-1;i++){
+          if(scrollY>=this.themeTopy[i]-44 && scrollY<this.themeTopy[i+1]-44){
+            //避免重复给this.$refs.detailbar.currentindex赋值
+            if(this.$refs.detailbar.currentindex!==i){
+              // console.log(i);
+              this.$refs.detailbar.currentindex=i
+            }
+
+          }
+
+
+        }
+
+        //是否隐藏返回顶部按钮
+        this.isshowbacktop = -position.y > 1000
+      },
+      //返回顶部按钮
+      backtopclick(){
+        // console.log('backtopclick');
+        this.$refs.scroll.scrollTo(0,0,500)
+      },
+      //加入购物车
+      addcart(){
+        // 1.创建对象
+        const obj = {}
+        // 2.对象信息
+        obj.iid = this.goodid;
+        obj.imgURL = this.banners[0]
+        obj.title = this.goodsinfo.title
+        obj.desc = this.goodsinfo.desc;
+        obj.newPrice = this.goodsinfo.realPrice;
+        // 3.添加到Store中
+        // this.$store.commit('addCart',obj)   //这是用mutations来直接增加的  为了能监控vuex  是增加新商品还是在已有的商品上+1，我们用actions
+        this.$store.dispatch('addShop',obj)
+      }
     },
+
     //混入: 会把混入里面 data  或者各种生命周期里的内容加到本次组件里
     mixins:[itemListenImage],
     mounted() {
@@ -179,6 +237,8 @@
     background-color: #fff;
   }
   .content {
-    height: calc(100% - 44px);
+    height: calc(100% - 44px - 49px);
   }
+
+
 </style>
