@@ -13,6 +13,7 @@ export default {
     else {
       //购物车没有这个商品  执行 把商品加入到cratList 同时加上count=1
       payload.count=1
+      payload.isselect = false
       context.commit('add_new_shop',payload)
     }
   }
