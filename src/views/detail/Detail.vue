@@ -38,25 +38,27 @@
   import {debounce} from "common/utils";
   import {itemListenImage} from "common/mixin"
 
+  import { mapActions } from 'vuex'
+
   export default {
     name: "Detail",
-    data(){
-      return{
-        goodid:null,
-        banners:[],
-        goodsinfo:{},
-        shopinfo:{},
-        detailinfo:{},
-        goodsparams:{},
-        comment:{},
-        recommond:[],
+    data() {
+      return {
+        goodid: null,
+        banners: [],
+        goodsinfo: {},
+        shopinfo: {},
+        detailinfo: {},
+        goodsparams: {},
+        comment: {},
+        recommond: [],
         // itemlisten:null   用了混入  所以注释掉
-        themeTopy:[],
-        themescroll:null,
-        isshowbacktop:false,
+        themeTopy: [],
+        themescroll: null,
+        isshowbacktop: false,
       }
     },
-    components:{
+    components: {
       Scroll,
 
       DetailNavBar,
@@ -74,22 +76,21 @@
       //获取本次商品的id
       this.goodid = this.$route.params.goodid
       //每次组件创建的时候获取相应商品的详情信息
-      getdetaildata(this.goodid).then(res=>{
+      getdetaildata(this.goodid).then(res => {
         const data = res.result
         // console.log(data);
         //获取轮播图数据
         this.banners = data.itemInfo.topImages
         //获取商品信息
-        this.goodsinfo = new GoodsInfo(data.itemInfo,data.columns,data.shopInfo.services)
+        this.goodsinfo = new GoodsInfo(data.itemInfo, data.columns, data.shopInfo.services)
         //获取商家信息
         this.shopinfo = new ShopInfo(data.shopInfo)
         //获取商品详情的一些信息和图片
         this.detailinfo = data.detailInfo
         //获取商品的参数信息
-        this.goodsparams = new GoodsParam(data.itemParams.info,data.itemParams.rule)
+        this.goodsparams = new GoodsParam(data.itemParams.info, data.itemParams.rule)
         //获取商品的品论信息
-        if(data.rate)
-        {
+        if (data.rate) {
           this.comment = data.rate.list[0]
         }
 
@@ -112,13 +113,13 @@
 
       })
       //获取更多推荐
-      getRecommend().then(res=>{
+      getRecommend().then(res => {
         this.recommond = res.data.list
         // console.log(this.recommond)
       })
 
       // 用防抖封装一下频繁获取 offsetTop
-      this.themescroll = debounce(()=>{
+      this.themescroll = debounce(() => {
         this.themeTopy = []
         this.themeTopy.push(0)
         this.themeTopy.push(this.$refs.params.$el.offsetTop)
@@ -126,12 +127,14 @@
         this.themeTopy.push(this.$refs.recommend.$el.offsetTop)
         this.themeTopy.push(Number.MAX_VALUE)
         // console.log(this.themeTopy);
-      },100)
-
+      }, 100)
     },
-    methods:{
+    methods: {
+      //将vuex里面的actions注入到这个方法里
+      ...mapActions(['addShop']),
+
       //商品的图片加载后重新计算scroll的高度
-      detailimageload(){
+      detailimageload() {
         // console.log('---');
         // this.$refs.scroll && this.$refs.scroll.refresh()
         //混入里的内容  加了防抖还
@@ -147,27 +150,26 @@
         // console.log(this.themeTopy);
       },
       //点击按钮可以回到对应的位置上 商品 参数 评论 推荐
-      centeritemclick(index){
+      centeritemclick(index) {
         // console.log(index);
-        if(this.themeTopy[index] !==0){
-          this.$refs.scroll.scrollTo(0,-this.themeTopy[index]+44,300)
-        }
-        else {
-          this.$refs.scroll.scrollTo(0,-this.themeTopy[index],300)
+        if (this.themeTopy[index] !== 0) {
+          this.$refs.scroll.scrollTo(0, -this.themeTopy[index] + 44, 300)
+        } else {
+          this.$refs.scroll.scrollTo(0, -this.themeTopy[index], 300)
         }
 
       },
       //监听滚动  并滚动到一定位置 切换 商品 参数 评论 推荐
-      scroll(position){
+      scroll(position) {
         // console.log(position);
         let scrollY = -position.y
-          // [0, 13874, 15156, 15405, 1.7976931348623157e+308,]
-        for(let i=0;i<this.themeTopy.length-1;i++){
-          if(scrollY>=this.themeTopy[i]-44 && scrollY<this.themeTopy[i+1]-44){
+        // [0, 13874, 15156, 15405, 1.7976931348623157e+308,]
+        for (let i = 0; i < this.themeTopy.length - 1; i++) {
+          if (scrollY >= this.themeTopy[i] - 44 && scrollY < this.themeTopy[i + 1] - 44) {
             //避免重复给this.$refs.detailbar.currentindex赋值
-            if(this.$refs.detailbar.currentindex!==i){
+            if (this.$refs.detailbar.currentindex !== i) {
               // console.log(i);
-              this.$refs.detailbar.currentindex=i
+              this.$refs.detailbar.currentindex = i
             }
 
           }
@@ -179,12 +181,12 @@
         this.isshowbacktop = -position.y > 1000
       },
       //返回顶部按钮
-      backtopclick(){
+      backtopclick() {
         // console.log('backtopclick');
-        this.$refs.scroll.scrollTo(0,0,500)
+        this.$refs.scroll.scrollTo(0, 0, 500)
       },
       //加入购物车
-      addcart(){
+      addcart() {
         // 1.创建对象
         const obj = {}
         // 2.对象信息
@@ -195,15 +197,23 @@
         obj.newPrice = this.goodsinfo.realPrice;
         // 3.添加到Store中
         // this.$store.commit('addCart',obj)   //这是用mutations来直接增加的  为了能监控vuex  是增加新商品还是在已有的商品上+1，我们用actions
-        this.$store.dispatch('addShop',obj)
+        // this.$store.dispatch('addShop', obj).then(res => {
+        //   console.log(res);
+        // })
+        //   //用vuex里的actions方法
+          this.addShop(obj).then(res=>{
+              console.log(res);
+              //显示加入toast
+              this.$toast.show(res,1000)
+        })
       }
     },
 
     //混入: 会把混入里面 data  或者各种生命周期里的内容加到本次组件里
-    mixins:[itemListenImage],
+    mixins: [itemListenImage],
     mounted() {
       //轮播图加载完成之后重新计算可滚动高度
-      this.$bus.$on('detailswiperload',()=>{
+      this.$bus.$on('detailswiperload', () => {
         this.$refs.scroll && this.$refs.scroll.refresh()
       })
       //这里用了混入  所以注释掉了
@@ -219,8 +229,8 @@
     destroyed() {
       // console.log('detaildestroyed');
       //组件销毁的时候就不监听这个事件了
-      this.$bus.$off('imageitemload',this.itemlisten)
-    }
+      this.$bus.$off('imageitemload', this.itemlisten)
+    },
   }
 </script>
 

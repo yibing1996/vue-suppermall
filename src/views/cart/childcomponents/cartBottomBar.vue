@@ -3,7 +3,7 @@
     <check-button class="select-all" :is-checked="isSelectAll" @click.native="checkbuttonclick"></check-button>
     <span>全选</span>
     <span class="total-price">合计:￥{{ totalPrice }}</span>
-    <span class="buy-product">去计算({{ totalCount }})</span>
+    <span class="buy-product" @click="buyclick">去计算({{ totalCount }})</span>
   </div>
 </template>
 
@@ -40,6 +40,11 @@
         else {
           //如果 有未选中的改为全选
           this.$store.getters.cartList.forEach(item=>item.isselect=true)
+        }
+      },
+      buyclick(){
+        if(!this.totalCount){
+          this.$toast.show('请先选择购买的商品',1000)
         }
       }
     }
